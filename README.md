@@ -1,6 +1,13 @@
 # 3BMeteo Funghi for Home Assistant
 
 [![Checks](https://github.com/Martin09/ha-3bmeteo-funghi/actions/workflows/ci.yaml/badge.svg)](https://github.com/Martin09/ha-3bmeteo-funghi/actions/workflows/ci.yaml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Martin09/ha-3bmeteo-funghi/badges/.badge/coverage.json&cacheSeconds=3600)](https://github.com/Martin09/ha-3bmeteo-funghi/actions/workflows/ci.yaml)
+[![Release](https://img.shields.io/github/v/release/Martin09/ha-3bmeteo-funghi)](https://github.com/Martin09/ha-3bmeteo-funghi/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://www.hacs.xyz/docs/use/)
+[![hassfest](https://img.shields.io/badge/hassfest-validated-41BDF5.svg)](https://developers.home-assistant.io/docs/creating_integration_manifest/#validation)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.3%2B-41BDF5.svg)](https://www.home-assistant.io)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 Bring [3BMeteo's mushroom-fruiting forecast](https://www.3bmeteo.com/meteo-funghi)
 into Home Assistant. UI setup, locality search, up to **15 dated forecast days**,
