@@ -34,7 +34,10 @@ Requires **Home Assistant 2026.3+** and internet access to `www.3bmeteo.com`.
 Repeat step 4 to monitor another locality. Duplicate localities are rejected
 using 3BMeteo's stable locality ID. Search is restricted to the provider's
 mushroom-supported localities; try a nearby locality if yours is not listed.
-Setup is available in Italian and English.
+3BMeteo's search API cannot match full locality names, so the integration
+automatically retries with shorter prefixes on your behalf and filters the
+results locally — typing a complete locality name still finds it. Setup is
+available in Italian and English.
 
 All runtime files, including the card and local brand icon, ship in one HACS
 integration download. No second repository, npm build, account, API key, or
@@ -114,7 +117,7 @@ The integration serves the bundled JavaScript once it is loaded. Enable it once:
 
 1. Enable **Advanced mode** in your Home Assistant user profile if needed.
 2. Open **Settings → Dashboards → ⋮ → Resources → Add resource**.
-3. URL: `/3bmeteo_funghi/3bmeteo-funghi-card.js?v=0.1.0`
+3. URL: `/3bmeteo_funghi/3bmeteo-funghi-card.js?v=0.1.1`
 4. Resource type: **JavaScript module**.
 5. Reload the browser, edit a dashboard, and choose **3BMeteo Funghi** from the
    card picker. Its visual editor lets you select the main score sensor, title,

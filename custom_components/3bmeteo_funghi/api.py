@@ -149,12 +149,29 @@ class MushroomClient:
             raise SourceError("Invalid response encoding") from err
 
     async def search(self, query: str) -> list[Location]:
+        """Search localities; the upstream index cannot match full names, so retry shorter and filter locally."""
         query = query.strip().lower().translate(str.maketrans({"ò": "o'", "à": "a'", "è": "e'", "ì": "i'", "ù": "u'"}))
+        if len(query) < 3:
+            return []
+        direct = await self._search_prefix(query)
+        if direct:
+            return direct
+        for size in range(len(query) - 1, 2, -1):
+            results = await self._search_prefix(query[:size])
+            if results:
+                tokens = query.replace("'", " ").split()
+                return [loc for loc in results if all(token in loc.name.casefold() for token in tokens)]
+        return []
+
+    async def _search_prefix(self, query: str) -> list[Location]:
         raw = await self._get(f"{BASE_URL}{SEARCH_PATH}{quote(query, safe='')}")
+        if not raw.strip():
+            return []
         try:
-            return await asyncio.to_thread(lambda: parse_locations(json.loads(raw)))
+            payload = json.loads(raw)
         except ValueError as err:
             raise SourceError("Invalid search JSON") from err
+        return await asyncio.to_thread(parse_locations, payload)
 
     async def forecast(self, location: Location) -> Forecast:
         html = await self._get(location.url)

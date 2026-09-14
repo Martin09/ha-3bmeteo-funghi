@@ -1,5 +1,6 @@
 """Parser regressions and mocked transport failures. Never contact 3BMeteo."""
 
+import json
 from datetime import date, datetime
 from unittest.mock import AsyncMock, MagicMock
 
@@ -113,11 +114,116 @@ def session_for(body=b"[]", status=200):
     return session
 
 
+def routed_session(routes: dict[str, tuple[int, bytes]]):
+    """Stub session replying per queried prefix, mimicking the upstream index quirks."""
+
+    class Context:
+        def __init__(self, status, body):
+            self.status, self.body = status, body
+
+        async def __aenter__(self):
+            async def chunks(_size):
+                yield self.body
+
+            response = MagicMock(status=self.status)
+            response.content.iter_chunked = chunks
+            return response
+
+        async def __aexit__(self, *_args):
+            return False
+
+    session = MagicMock()
+    session.calls = []
+
+    def get(url, **_kwargs):
+        key = url.rsplit("/", 1)[-1].lower()
+        session.calls.append(key)
+        status, body = routes.get(key, (200, b""))
+        return Context(status, body)
+
+    session.get.side_effect = get
+    return session
+
+
+def record(identifier, name, slug, region):
+    return {
+        "id_localita": identifier,
+        "nome_loc": name,
+        "canonical": slug,
+        "tipo": "M",
+        "prov": "VI",
+        "regione": region,
+    }
+
+
+CIVIASCO = record(2155, "Civiasco", "civiasco", "Piemonte")
+CIVITA = record(2159, "Civita", "civita", "Calabria")
+CIVAGO = record(978, "Civago", "civago", "Emilia Romagna")
+
+
 async def test_search_transport():
-    session = session_for()
-    assert await api.MushroomClient(session).search(" Forlì ") == []
-    assert session.get.call_args.args[0].endswith("/forli%27")
-    assert session.get.call_args.kwargs["allow_redirects"] is False
+    body = json.dumps([record(1, "Forli'", "forli", "Emilia Romagna")]).encode()
+    session = session_for(body)
+    result = await api.MushroomClient(session).search(" Forlì ")
+    assert [loc.name for loc in result] == ["Forli'"]
+    call = session.get.call_args
+    assert call.args[0].endswith("/forli%27")
+    assert call.kwargs["allow_redirects"] is False
+    assert session.get.call_count == 1
+
+
+async def test_full_name_falls_back_to_prefix():
+    session = routed_session(
+        {
+            "civiasco": (200, b""),
+            "civiasc": (200, b"\n"),
+            "civias": (200, b"   "),
+            "civia": (200, b""),
+            "civ": (200, json.dumps([CIVAGO, {}, None, CIVITA, CIVIASCO]).encode()),
+        }
+    )
+    result = await api.MushroomClient(session).search("Civiasco")
+    assert [loc.name for loc in result] == ["Civiasco"]
+    assert session.calls == ["civiasco", "civiasc", "civias", "civia", "civi", "civ"]
+
+
+async def test_fallback_drops_records_without_filter_match():
+    session = routed_session({"xcvit": (200, json.dumps([CIVITA, CIVAGO]).encode())})
+    assert await api.MushroomClient(session).search("xcvita") == []
+
+
+async def test_multi_token_fallback_with_apostrophe():
+    session = routed_session(
+        {
+            "civita": (
+                200,
+                json.dumps([CIVITA, record(2161, "Civita d'Antino", "civita+dantino", "Abruzzo"), CIVAGO]).encode(),
+            ),
+        }
+    )
+    result = await api.MushroomClient(session).search("Civita d'Antino")
+    assert [loc.name for loc in result] == ["Civita d'Antino"]
+
+
+async def test_three_char_query_makes_no_fallback_calls():
+    session = routed_session({"xyz": (200, b"")})
+    assert await api.MushroomClient(session).search(" xyz ") == []
+    assert session.calls == ["xyz"]
+
+
+async def test_empty_exact_json_list_then_shorter_prefix():
+    session = routed_session(
+        {"asiago": (200, b"[]"), "asiag": (200, json.dumps([record(376, "Asiago", "asiago", "Veneto")]).encode())}
+    )
+    result = await api.MushroomClient(session).search("asiago")
+    assert [loc.name for loc in result] == ["Asiago"]
+    assert session.calls == ["asiago", "asiag"]
+
+
+async def test_fallback_json_error_propagates():
+    session = routed_session({"asiago": (200, b""), "asiag": (200, b"not json")})
+    with pytest.raises(api.SourceError):
+        await api.MushroomClient(session).search("asiago")
 
 
 async def test_forecast_transport(location, html):
