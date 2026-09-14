@@ -1,0 +1,47 @@
+{
+  "title": "3BMeteo Funghi",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Find a mushroom forecast location",
+        "description": "Search Italian hill and mountain localities supported by 3BMeteo (at least 3 characters). Add the integration again for another location.",
+        "data": {"query": "Location name"}
+      },
+      "location": {
+        "title": "Choose a location",
+        "description": "The forecast will be checked before adding this location.",
+        "data": {"location": "Location"}
+      }
+    },
+    "error": {
+      "query_too_short": "Enter at least 3 characters.",
+      "cannot_connect": "Cannot reach 3BMeteo. Please try again later.",
+      "invalid_response": "3BMeteo returned an invalid or expired forecast. Please try again later; report persistent failures.",
+      "no_locations": "No supported mushroom locations found. Try a nearby hill or mountain locality.",
+      "invalid_location": "Choose a location from the search results."
+    },
+    "abort": {"already_configured": "This location is already configured."}
+  },
+  "entity": {
+    "sensor": {
+      "score": {"name": "Mushroom score"},
+      "tomorrow": {"name": "Mushroom score tomorrow"},
+      "category": {
+        "name": "Mushroom presence",
+        "state": {
+          "absent": "Absent",
+          "almost_absent": "Almost absent",
+          "scarce": "Scarce or localized",
+          "fair": "Fair",
+          "good": "Good",
+          "excellent": "Excellent",
+          "exceptional": "Exceptional"
+        }
+      },
+      "peak": {"name": "Peak mushroom score"},
+      "best_day": {"name": "Best mushroom day"},
+      "forecast_days": {"name": "Forecast days available"},
+      "published": {"name": "Forecast publication time"}
+    }
+  }
+}

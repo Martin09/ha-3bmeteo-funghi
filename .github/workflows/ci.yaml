@@ -1,0 +1,35 @@
+name: Checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --group browser
+      - run: uv run --group browser playwright install --with-deps chromium
+      - run: uv run --group browser pytest tests/ --cov --cov-report=term-missing
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run prek run --all-files
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: home-assistant/actions/hassfest@master
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: hacs/action@main
+        with:
+          category: integration

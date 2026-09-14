@@ -1,0 +1,47 @@
+{
+  "title": "3BMeteo Funghi",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cerca una località per le previsioni funghi",
+        "description": "Cerca le località collinari e montane italiane supportate da 3BMeteo (almeno 3 caratteri). Aggiungi nuovamente l'integrazione per un'altra località.",
+        "data": {"query": "Nome della località"}
+      },
+      "location": {
+        "title": "Scegli una località",
+        "description": "Le previsioni verranno verificate prima di aggiungere la località.",
+        "data": {"location": "Località"}
+      }
+    },
+    "error": {
+      "query_too_short": "Inserisci almeno 3 caratteri.",
+      "cannot_connect": "Impossibile contattare 3BMeteo. Riprova più tardi.",
+      "invalid_response": "3BMeteo ha restituito previsioni non valide o scadute. Riprova più tardi; segnala il problema se persiste.",
+      "no_locations": "Nessuna località funghi trovata. Prova una località collinare o montana vicina.",
+      "invalid_location": "Scegli una località tra i risultati della ricerca."
+    },
+    "abort": {"already_configured": "Questa località è già configurata."}
+  },
+  "entity": {
+    "sensor": {
+      "score": {"name": "Indice funghi"},
+      "tomorrow": {"name": "Indice funghi domani"},
+      "category": {
+        "name": "Presenza funghi",
+        "state": {
+          "absent": "Assente",
+          "almost_absent": "Quasi del tutto assente",
+          "scarce": "Scarsa o localizzata",
+          "fair": "Discreta",
+          "good": "Buona",
+          "excellent": "Ottima",
+          "exceptional": "Eccezionale"
+        }
+      },
+      "peak": {"name": "Indice funghi massimo"},
+      "best_day": {"name": "Giorno migliore per i funghi"},
+      "forecast_days": {"name": "Giorni di previsione disponibili"},
+      "published": {"name": "Data di pubblicazione delle previsioni"}
+    }
+  }
+}
